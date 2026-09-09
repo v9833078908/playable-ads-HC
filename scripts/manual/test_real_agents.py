@@ -5,10 +5,13 @@ Real integration test for multi-agent pipeline
 Run from project root: python test_real_agents.py
 """
 
-import os
 import sys
-import asyncio
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # repo root on sys.path
+
+import os
+import asyncio
 from dotenv import load_dotenv
 
 # Load environment variables

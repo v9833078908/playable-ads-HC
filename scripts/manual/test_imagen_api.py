@@ -1,11 +1,12 @@
 """Test script for Gemini Imagen API"""
 
-import os
 import sys
 from pathlib import Path
 
-# Add project root to path
-sys.path.insert(0, str(Path(__file__).parent))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # repo root on sys.path
+
+import os
+
 
 # Import directly to avoid services/__init__.py importing old gemini_client
 from services.imagen_client import ImagenClient

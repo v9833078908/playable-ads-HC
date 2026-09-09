@@ -3,12 +3,15 @@
 Detailed pipeline test showing full output of each agent
 """
 
-import os
 import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # repo root on sys.path
+
+import os
 import asyncio
 import base64
 import json
-from pathlib import Path
 from dotenv import load_dotenv
 
 # Load environment variables

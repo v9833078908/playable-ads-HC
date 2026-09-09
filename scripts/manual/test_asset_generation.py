@@ -2,11 +2,12 @@
 """Test script for asset generation with real FAL API (Phase 8 validation)"""
 
 import sys
-import os
 from pathlib import Path
 
-# Add project root to path
-sys.path.insert(0, str(Path(__file__).parent.parent))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # repo root on sys.path
+
+import os
+
 
 # Load .env file
 env_path = Path(__file__).parent.parent / ".env"

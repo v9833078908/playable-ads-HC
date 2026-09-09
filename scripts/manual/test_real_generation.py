@@ -4,8 +4,11 @@
 """
 
 import sys
-import json
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # repo root on sys.path
+
+import json
 
 from models.spec import PlayableSpec
 from playable_agents.html_generator import generate_html

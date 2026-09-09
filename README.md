@@ -32,8 +32,9 @@ flowchart TD
 The orchestrator is a single Claude agent driving ~18 tools
 (`playable_agents/orchestrator.py`). Key properties:
 
-- **Self-correcting loop** — screenshot, score, patch. Capped at 5 QA iterations
-  or a visual score of 7/10, whichever comes first.
+- **Self-correcting loop** — screenshot, score, patch. Stops at a visual score of
+  7/10 or `OrchestratorContext.max_iterations` (7, hard-coded), whichever comes
+  first; the tool runner itself is bounded at 60 turns.
 - **Section-level editing** — the HTML is patched through
   `read_html_section` / `replace_html_section` instead of being regenerated, so
   large base64 payloads never re-enter the model's output budget.

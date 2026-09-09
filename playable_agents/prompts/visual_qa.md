@@ -38,7 +38,9 @@ You will receive:
 ### Completeness
 - 1-3: Missing assets, broken states
 - 4-6: All assets present, some states broken
-- 7-8: All states work, MRAID, touch correct
+- 7-8: All states work, MRAID, touch correct, layer order correct (background
+  behind characters, characters behind effects, UI/CTA on top — nothing clipped
+  or hidden by a wrong z-index)
 - 9-10: Edge cases handled, platform detection, perfect navigation
 
 ## Output Format

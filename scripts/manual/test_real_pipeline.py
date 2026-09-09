@@ -6,11 +6,14 @@ Single entry point: run_orchestrator() handles everything.
 Verifies: iterations, scores, version history, memory, output HTML.
 """
 
-import os
 import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # repo root on sys.path
+
+import os
 import asyncio
 import base64
-from pathlib import Path
 from dotenv import load_dotenv
 
 # Load environment variables

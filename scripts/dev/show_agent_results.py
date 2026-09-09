@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
 """Show detailed results from each agent"""
 
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # repo root on sys.path
+
 import asyncio
 import base64
 import json
-from pathlib import Path
 from dotenv import load_dotenv
 
 # Load environment

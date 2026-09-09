@@ -4,8 +4,11 @@ Quick test to verify the three critical fixes
 """
 
 import sys
-import re
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # repo root on sys.path
+
+import re
 from dotenv import load_dotenv
 
 # Load environment variables first
