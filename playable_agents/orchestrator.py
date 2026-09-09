@@ -633,7 +633,7 @@ Start directly with the improvement loop:
 1. Call take_screenshots to see current state
 2. Call evaluate_visual to score it
 3. Based on scores, use read_html_section + replace_html_section to improve weak areas
-4. LOOP: take_screenshots → evaluate_visual → patch until score >= 7 or 5 iterations
+4. LOOP: take_screenshots → evaluate_visual → patch until score >= 7 or {orch_ctx.max_iterations} iterations
 5. Call save_to_memory with what worked
 
 Specification (for context):

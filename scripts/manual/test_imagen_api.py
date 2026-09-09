@@ -62,7 +62,7 @@ def test_with_reference():
     logger.info("=" * 60)
 
     # Check if we have a reference image
-    ref_path = "docs/misc/Assets"
+    ref_path = os.getenv("PLAYABLE_ASSETS", "docs/misc/Assets")
     if not os.path.exists(ref_path):
         logger.warning(f"⚠️  SKIPPED: No reference images at {ref_path}")
         return True

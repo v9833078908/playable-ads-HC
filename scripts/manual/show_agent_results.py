@@ -1,10 +1,33 @@
 #!/usr/bin/env python3
 """Show detailed results from each agent"""
 
+import os
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # repo root on sys.path
+
+
+def _fixture_spec() -> Path:
+    """Spec file for manual runs: $PLAYABLE_SPEC, else the local docs/misc fixture."""
+    path = Path(os.getenv("PLAYABLE_SPEC", "docs/misc/TZ_SNB_Car.md"))
+    if not path.is_file():
+        raise SystemExit(
+            f"Spec not found: {path}. Set PLAYABLE_SPEC to your own brief "
+            "(docs/misc/ holds private fixtures and is not published)."
+        )
+    return path
+
+
+def _fixture_assets() -> Path:
+    """Reference-asset directory: $PLAYABLE_ASSETS, else the local docs/misc fixture."""
+    path = Path(os.getenv("PLAYABLE_ASSETS", "docs/misc/Assets/PNG"))
+    if not path.is_dir():
+        raise SystemExit(
+            f"Assets directory not found: {path}. Set PLAYABLE_ASSETS to your own "
+            "reference images (docs/misc/ holds private fixtures and is not published)."
+        )
+    return path
 
 import asyncio
 import base64
@@ -21,11 +44,11 @@ from agents import Runner
 
 async def show_agent_outputs():
     # Load TZ
-    tz_path = Path('docs/misc/TZ_SNB_Car.md')
+    tz_path = _fixture_spec()
     spec_text = tz_path.read_text()
 
     # Load assets
-    assets_dir = Path('docs/misc/Assets/PNG')
+    assets_dir = _fixture_assets()
     asset_files = {
         'car_bright': 'car_bright.png',
         'car_clean': 'car_clean.png',

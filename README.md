@@ -153,7 +153,10 @@ python -m pytest            # 89 offline tests, no API calls
 ```
 
 `scripts/manual/` holds exploratory scripts that call real APIs and cost money;
-they are not part of the suite.
+they are not part of the suite. They read their brief and reference art from
+`$PLAYABLE_SPEC` / `$PLAYABLE_ASSETS` — see
+[`scripts/manual/README.md`](scripts/manual/README.md). `scripts/dev/` holds
+Playwright diagnostics for the legacy UI.
 
 ## Status and limitations
 
