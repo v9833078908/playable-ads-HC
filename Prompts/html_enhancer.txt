@@ -1,0 +1,457 @@
+# HTML Enhancer Prompt for Playable Ads
+
+You are an expert frontend engineer specializing in playable ads. Your task is to ENHANCE an existing HTML5 playable ad by adding professional polish effects.
+
+## INPUT
+
+You will receive:
+1. **Basic HTML** - A functional but minimal playable ad
+2. **Game Specification** - Details about mechanics, scenes, assets
+3. **Reference Code Snippets** - High-quality examples for each effect
+
+## YOUR TASK
+
+Analyze the basic HTML and ADD the following enhancements. Do NOT rewrite the entire HTML - carefully INSERT new code sections.
+
+---
+
+## EFFECT 1: HOSE PHYSICS (Verlet Integration)
+
+**Where:** Inside the `<script>` tag, before the game loop
+
+**Add this code:**
+
+```javascript
+/* ========================================
+   HOSE PHYSICS (VERLET INTEGRATION)
+   ======================================== */
+
+const hoseSegments = [];
+const numSegments = 20;
+const segmentLength = 30;
+
+let prevMouseX = 0;
+let prevMouseY = 0;
+
+function initHosePhysics() {
+    const kScale = 0.24;
+    const kH = images.karcher_one?.height * kScale || 120;
+
+    const startX = game.hose.x;
+    const startY = game.hose.y + kH/2;
+    const endY = 960;
+
+    for (let i = 0; i < numSegments; i++) {
+        const t = i / (numSegments - 1);
+        const y = startY + (endY - startY) * t;
+
+        hoseSegments.push({
+            x: startX,
+            y: y,
+            vx: 0,
+            vy: 0,
+            prevX: startX,
+            prevY: y
+        });
+    }
+
+    prevMouseX = game.hose.x;
+    prevMouseY = game.hose.y;
+}
+
+function updateHosePhysics() {
+    if (hoseSegments.length === 0) return;
+
+    const kScale = 0.24;
+    const kH = images.karcher_one?.height * kScale || 120;
+
+    const cursorDeltaX = game.hose.x - prevMouseX;
+    const cursorDeltaY = game.hose.y - prevMouseY;
+    const cursorSpeed = Math.sqrt(cursorDeltaX * cursorDeltaX + cursorDeltaY * cursorDeltaY);
+
+    prevMouseX = game.hose.x;
+    prevMouseY = game.hose.y;
+
+    const targetX = game.hose.x;
+    const targetY = game.hose.y + kH/2;
+    hoseSegments[0].x = targetX;
+    hoseSegments[0].y = targetY;
+
+    const lastIdx = numSegments - 1;
+    hoseSegments[lastIdx].x = game.hose.x;
+    hoseSegments[lastIdx].y = 960;
+
+    const isMoving = cursorSpeed > 0.5 || game.hose.isDragging;
+    const damping = isMoving ? 0.92 : 0.80;
+
+    for (let i = 1; i < numSegments - 1; i++) {
+        const seg = hoseSegments[i];
+
+        const tempX = seg.x;
+        const tempY = seg.y;
+
+        seg.vx = (seg.x - seg.prevX) * damping;
+        seg.vy = (seg.y - seg.prevY) * damping;
+
+        if (isMoving) {
+            seg.vy += 0.15;
+
+            const distFromTop = i / (numSegments - 1);
+            if (distFromTop < 0.5) {
+                const influence = (0.5 - distFromTop) * 2;
+                seg.vx += cursorDeltaX * 0.05 * influence;
+                seg.vy += cursorDeltaY * 0.05 * influence;
+            }
+        }
+
+        seg.x += seg.vx;
+        seg.y += seg.vy;
+
+        seg.prevX = tempX;
+        seg.prevY = tempY;
+    }
+
+    for (let iter = 0; iter < 5; iter++) {
+        for (let i = 0; i < numSegments - 1; i++) {
+            const seg1 = hoseSegments[i];
+            const seg2 = hoseSegments[i + 1];
+
+            const dx = seg2.x - seg1.x;
+            const dy = seg2.y - seg1.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+
+            if (dist > 0) {
+                const diff = (dist - segmentLength) / dist;
+                const offsetX = dx * diff * 0.5;
+                const offsetY = dy * diff * 0.5;
+
+                if (i > 0) {
+                    seg1.x += offsetX;
+                    seg1.y += offsetY;
+                }
+                if (i < numSegments - 2) {
+                    seg2.x -= offsetX;
+                    seg2.y -= offsetY;
+                }
+            }
+        }
+
+        hoseSegments[0].x = targetX;
+        hoseSegments[0].y = targetY;
+        hoseSegments[lastIdx].x = game.hose.x;
+        hoseSegments[lastIdx].y = 960;
+    }
+}
+
+function drawHosePhysics() {
+    if (hoseSegments.length === 0) return;
+
+    ctx.strokeStyle = '#2d2d2d';
+    ctx.lineWidth = 12;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
+    ctx.shadowColor = 'rgba(0,0,0,0.3)';
+    ctx.shadowBlur = 4;
+    ctx.shadowOffsetX = 2;
+    ctx.shadowOffsetY = 2;
+
+    ctx.beginPath();
+    ctx.moveTo(hoseSegments[0].x, hoseSegments[0].y);
+
+    for (let i = 1; i < hoseSegments.length; i++) {
+        ctx.lineTo(hoseSegments[i].x, hoseSegments[i].y);
+    }
+
+    ctx.stroke();
+    ctx.restore();
+}
+```
+
+**Also add to game loop:**
+```javascript
+// After images are loaded, call initHosePhysics()
+initHosePhysics();
+
+// In render function, before drawing other elements:
+if (!game.gameComplete) {
+    updateHosePhysics();
+    drawHosePhysics();
+}
+```
+
+---
+
+## EFFECT 2: PARALLAX CLOUDS
+
+**Where:** After the sky background in render function
+
+**Add this code:**
+
+```javascript
+/* ========================================
+   PARALLAX CLOUDS (FLAT STYLE)
+   ======================================== */
+
+const clouds = [];
+
+function createCloud() {
+    const cloudType = Math.random();
+    let layer, baseSpeed, sizeMultiplier, opacityRange;
+
+    if (cloudType < 0.3) {
+        layer = 'far';
+        baseSpeed = 0.08;
+        sizeMultiplier = 0.7;
+        opacityRange = [0.3, 0.45];
+    } else if (cloudType < 0.7) {
+        layer = 'mid';
+        baseSpeed = 0.2;
+        sizeMultiplier = 1.0;
+        opacityRange = [0.5, 0.7];
+    } else {
+        layer = 'near';
+        baseSpeed = 0.4;
+        sizeMultiplier = 1.3;
+        opacityRange = [0.7, 0.85];
+    }
+
+    const width = 60 + Math.random() * 80;
+    const height = width * 0.5;
+    const speed = baseSpeed * (0.8 + Math.random() * 0.4);
+
+    const bumps = [];
+    const numBumps = 2 + Math.floor(Math.random() * 3);
+    for (let i = 0; i < numBumps; i++) {
+        bumps.push({
+            x: 0.2 + Math.random() * 0.6,
+            y: 0.3 + Math.random() * 0.4,
+            radiusX: 0.25 + Math.random() * 0.2,
+            radiusY: 0.35 + Math.random() * 0.25
+        });
+    }
+
+    return {
+        x: Math.random() * game.width,
+        y: 50 + Math.random() * 200,
+        width: width * sizeMultiplier,
+        height: height * sizeMultiplier,
+        speed: speed,
+        layer: layer,
+        opacity: opacityRange[0] + Math.random() * (opacityRange[1] - opacityRange[0]),
+        bumps: bumps
+    };
+}
+
+for (let i = 0; i < 8; i++) {
+    clouds.push(createCloud());
+}
+
+function updateClouds() {
+    clouds.forEach(cloud => {
+        cloud.x += cloud.speed;
+
+        if (cloud.x > game.width + cloud.width) {
+            cloud.x = -cloud.width;
+            const newCloud = createCloud();
+            Object.assign(cloud, newCloud);
+        }
+    });
+}
+
+function drawCloud(cloud) {
+    ctx.save();
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.08)';
+    ctx.shadowBlur = 8;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 4;
+    ctx.globalAlpha = cloud.opacity;
+    ctx.fillStyle = 'white';
+
+    ctx.beginPath();
+    cloud.bumps.forEach(bump => {
+        const cx = cloud.x + cloud.width * bump.x;
+        const cy = cloud.y + cloud.height * bump.y;
+        const rx = cloud.width * bump.radiusX;
+        const ry = cloud.height * bump.radiusY;
+        ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+    });
+    ctx.fill();
+    ctx.restore();
+}
+
+function drawClouds() {
+    const sortedClouds = [...clouds].sort((a, b) => {
+        const layerOrder = { far: 0, mid: 1, near: 2 };
+        return layerOrder[a.layer] - layerOrder[b.layer];
+    });
+    sortedClouds.forEach(cloud => drawCloud(cloud));
+}
+```
+
+**Also add to render function:**
+```javascript
+// After drawing sky gradient:
+updateClouds();
+drawClouds();
+```
+
+---
+
+## EFFECT 3: WATER PARTICLES
+
+**Where:** After other game systems
+
+**Add this code:**
+
+```javascript
+/* ========================================
+   WATER PARTICLES
+   ======================================== */
+
+const particles = [];
+
+function createParticles(x, y) {
+    const count = 3;
+    for (let i = 0; i < count; i++) {
+        const angle = (Math.random() - 0.5) * 0.8 - Math.PI / 2;
+        const speed = 3 + Math.random() * 5;
+        particles.push({
+            x: x,
+            y: y,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            radius: 2 + Math.random() * 3,
+            life: 1.0,
+            decay: 0.02 + Math.random() * 0.02
+        });
+    }
+}
+
+function updateParticles() {
+    for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.15;
+        p.life -= p.decay;
+
+        if (p.life <= 0) {
+            particles.splice(i, 1);
+        }
+    }
+}
+
+function drawParticles() {
+    particles.forEach(p => {
+        ctx.globalAlpha = p.life * 0.6;
+        ctx.fillStyle = '#4FC3F7';
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.fill();
+    });
+    ctx.globalAlpha = 1.0;
+}
+```
+
+**Also add to render function:**
+```javascript
+// When hose is dragging and over car:
+if (game.hose.isDragging && isOverCar(mouseX, mouseY)) {
+    createParticles(game.hose.x, game.hose.y - 60);
+}
+
+// Always call:
+updateParticles();
+drawParticles();
+```
+
+---
+
+## EFFECT 4: TUTORIAL HAND
+
+**Where:** Add to game state and render function
+
+**Add to game object:**
+```javascript
+tutorialDone: false,
+washTextAlpha: 1.0,
+```
+
+**Add to render function:**
+```javascript
+// Draw tutorial hand
+if (!game.tutorialDone && images.hand) {
+    const centerX = game.width / 2;
+    const centerY = 600;
+    const handW = 80;
+    const handH = 80;
+    const arcRadius = 40;
+    const time = Date.now() / 800;
+    const angle = time * Math.PI * 2;
+    const handX = centerX + Math.cos(angle) * arcRadius;
+    const handY = centerY + Math.abs(Math.cos(angle)) * arcRadius;
+
+    ctx.globalAlpha = 0.9;
+    ctx.drawImage(images.hand, handX - handW/2, handY - handH/2, handW, handH);
+    ctx.globalAlpha = 1.0;
+}
+```
+
+**Set tutorialDone when user interacts:**
+```javascript
+// In mouse/touch event handlers:
+game.tutorialDone = true;
+```
+
+---
+
+## EFFECT 5: SHIMMER BUTTON
+
+**Where:** In the CSS for #nextButton
+
+**Add to existing CSS:**
+```css
+#nextButton::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 40%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.6),
+        transparent
+    );
+    transform: skewX(-20deg);
+}
+
+@keyframes shimmer {
+    0% {
+        left: -100%;
+    }
+    100% {
+        left: 150%;
+    }
+}
+
+#nextButton.appear::before {
+    animation: shimmer 1s ease-out 1.5s infinite 3s;
+}
+```
+
+---
+
+## OUTPUT FORMAT
+
+Return ONLY the complete enhanced HTML. Wrap it in markdown code blocks.
+
+**Important:**
+- Preserve all existing functionality
+- Keep all existing assets and references
+- Only ADD code, don't remove working code
+- Maintain the same structure (HTML, CSS, JS sections)
+- Ensure all effects work together without conflicts

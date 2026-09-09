@@ -1,0 +1,29 @@
+# === AI / Agents ===
+openai-agents>=0.0.1
+openai>=1.12.0
+anthropic>=0.52.0  # Anthropic SDK with beta tool_runner + context management
+google-genai>=1.0.0
+fal-client>=0.12.0  # FAL.AI for Gemini image generation
+
+# === PDF Processing ===
+PyMuPDF>=1.23.0
+
+# === Image Processing ===
+Pillow>=10.2.0
+rembg>=2.0.50
+
+# === Web Framework ===
+streamlit>=1.31.0
+
+# === Templating ===
+Jinja2>=3.1.3
+
+# === Validation ===
+pydantic>=2.6.0
+
+# === Browser Automation ===
+playwright>=1.40.0  # Playwright for multi-state screenshots
+
+# === Utils ===
+python-dotenv>=1.0.0
+requests>=2.31.0  # For downloading generated images from FAL.AI

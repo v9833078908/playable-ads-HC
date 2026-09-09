@@ -1,0 +1,513 @@
+{
+  "$comment": "PlayableSpec для Pirate Ships - сгенерирован на основе PDF ТЗ",
+  
+  "meta": {
+    "title": "Pirate Ships - Build and Fight",
+    "project_code": "pl001",
+    "language": "EN",
+    "networks": ["applovin", "unity", "mintegral"],
+    "max_size_mb": 5,
+    "created": "2025-01-31"
+  },
+  
+  "mraid": {
+    "version": "2.0",
+    "start_gate": ["ready", "viewableChange"],
+    "click_url_android": "https://play.google.com/store/apps/details?id=com.herocraft.game.piratearena",
+    "click_url_ios": "https://apps.apple.com/ru/app/pirate-ships-build-and-fight/id1538178771",
+    "sound_on_interaction_only": true,
+    "no_auto_redirect": true
+  },
+  
+  "layout": {
+    "base_resolution": [1080, 1080],
+    "orientation": "both",
+    "safe_area": true,
+    "scale_mode": "fit"
+  },
+  
+  "assets": {
+    "backgrounds": [
+      {
+        "id": "bg_battle",
+        "source_file": "001.jpg",
+        "role": "battle_scene",
+        "description": "Два корабля в бою, вид сверху, HP bars"
+      },
+      {
+        "id": "bg_setup",
+        "source_file": "005.jpg",
+        "role": "setup_scene",
+        "description": "Корабль игрока, сетка слотов, панель модулей внизу"
+      },
+      {
+        "id": "bg_merge_battle",
+        "source_file": "008.jpg",
+        "role": "battle_with_merge",
+        "description": "Бой с индикатором merge (+)"
+      },
+      {
+        "id": "bg_victory",
+        "source_file": "009.jpg",
+        "role": "victory_screen",
+        "description": "Victory! экран с наградами и CTA"
+      }
+    ],
+    
+    "characters": [
+      {
+        "id": "repairer_idle",
+        "source_file": "Repairer_-_Idle__500x500__00002.png",
+        "role": "unit",
+        "type": "repairer",
+        "size": [500, 500],
+        "description": "Ремонтник в idle позе, вид сзади"
+      },
+      {
+        "id": "repairer_work",
+        "source_file": "Repairer_-_Repair__500x500__00009.png",
+        "role": "unit",
+        "type": "repairer",
+        "size": [500, 500],
+        "description": "Ремонтник за работой"
+      },
+      {
+        "id": "gunman_idle",
+        "source_file": "Gunman_-_Idle__500x500__00130.png",
+        "role": "unit",
+        "type": "gunman",
+        "size": [500, 500],
+        "description": "Стрелок с ружьём"
+      }
+    ],
+    
+    "ui_elements": [
+      {
+        "id": "hp_bar_player",
+        "type": "generated",
+        "color": "#4CAF50",
+        "description": "Зелёная полоса HP игрока"
+      },
+      {
+        "id": "hp_bar_enemy",
+        "type": "generated",
+        "color": "#F44336",
+        "description": "Красная полоса HP врага"
+      },
+      {
+        "id": "grid_cell",
+        "type": "generated",
+        "color": "rgba(0, 255, 255, 0.3)",
+        "border": "#00FFFF",
+        "description": "Ячейка сетки для размещения"
+      },
+      {
+        "id": "cta_button",
+        "type": "generated",
+        "color": "#4CAF50",
+        "text_color": "#FFFFFF",
+        "description": "Кнопка TAKE REWARD"
+      }
+    ],
+    
+    "icons": [
+      {
+        "id": "icon_repairer",
+        "role": "inventory_icon",
+        "source": "crop_from_005.jpg",
+        "description": "Иконка ремонтника в инвентаре"
+      },
+      {
+        "id": "icon_shield",
+        "role": "inventory_icon",
+        "source": "crop_from_005.jpg",
+        "description": "Иконка щита в инвентаре"
+      },
+      {
+        "id": "icon_cannon",
+        "role": "inventory_icon",
+        "source": "crop_from_005.jpg",
+        "description": "Иконка пушки в инвентаре"
+      },
+      {
+        "id": "icon_gunman",
+        "role": "inventory_icon",
+        "source": "crop_from_005.jpg",
+        "description": "Иконка стрелка в инвентаре"
+      },
+      {
+        "id": "icon_swordsman",
+        "role": "inventory_icon",
+        "source": "crop_from_005.jpg",
+        "description": "Иконка мечника в инвентаре"
+      }
+    ],
+    
+    "rewards": [
+      {
+        "id": "reward_buckshot_cannon",
+        "name": "BUCKSHOT CANNON",
+        "source": "crop_from_009.jpg"
+      },
+      {
+        "id": "reward_frigate_ship",
+        "name": "FRIGATE SHIP",
+        "source": "crop_from_009.jpg"
+      },
+      {
+        "id": "reward_medic_pirate",
+        "name": "MEDIC PIRATE",
+        "source": "crop_from_009.jpg"
+      }
+    ]
+  },
+  
+  "scenes": [
+    {
+      "id": "hook",
+      "type": "battle",
+      "duration_sec": 3,
+      "auto_advance": true,
+      "description": "Хук: вражеский корабль атакует пустой корабль игрока",
+      "ui": {
+        "show_hp_bars": true,
+        "enemy_hp_visible": true,
+        "player_hp_visible": true
+      },
+      "mechanics": [
+        {
+          "type": "BattleLoop",
+          "config": {
+            "player_hp": 100,
+            "enemy_hp": 100,
+            "enemy_dps": 10,
+            "player_dps": 0,
+            "show_damage_vfx": true,
+            "duration_sec": 3
+          }
+        }
+      ],
+      "visual_effects": [
+        "cracks_appear",
+        "fire_effects"
+      ]
+    },
+    
+    {
+      "id": "repair_tutorial",
+      "type": "tutorial",
+      "description": "Сцена 1: Ремонт корабля - перетащить ремонтника",
+      "ui": {
+        "title": "REPAIR YOUR SHIP",
+        "subtitle": "DRAG REPAIRMANS ON SHIP",
+        "show_tutorial_hand": true,
+        "highlight_item": "icon_repairer"
+      },
+      "mechanics": [
+        {
+          "type": "GridPlacement",
+          "config": {
+            "grid_size": [3, 2],
+            "highlight_color": "#FFEB3B",
+            "required_items": [
+              {
+                "asset_id": "icon_repairer",
+                "count": 1,
+                "cells": 1
+              }
+            ],
+            "on_complete": "next_scene"
+          }
+        }
+      ],
+      "inventory": [
+        {"id": "icon_repairer", "enabled": true, "highlight": true},
+        {"id": "icon_shield", "enabled": false},
+        {"id": "icon_cannon", "enabled": false},
+        {"id": "icon_gunman", "enabled": false},
+        {"id": "icon_swordsman", "enabled": false}
+      ]
+    },
+    
+    {
+      "id": "shield_tutorial",
+      "type": "tutorial",
+      "description": "Сцена 1.1: Установка щита для защиты ремонтников",
+      "ui": {
+        "title": "REPAIR YOUR SHIP",
+        "subtitle": "DRAG SHIELDS TO PROTECT THEM",
+        "show_tutorial_hand": true,
+        "highlight_item": "icon_shield"
+      },
+      "mechanics": [
+        {
+          "type": "GridPlacement",
+          "config": {
+            "grid_size": [3, 2],
+            "highlight_color": "#FFEB3B",
+            "required_items": [
+              {
+                "asset_id": "icon_shield",
+                "count": 1,
+                "cells": 2
+              }
+            ],
+            "on_complete": "next_scene"
+          }
+        }
+      ],
+      "inventory": [
+        {"id": "icon_repairer", "enabled": false, "used": true},
+        {"id": "icon_shield", "enabled": true, "highlight": true},
+        {"id": "icon_cannon", "enabled": false},
+        {"id": "icon_gunman", "enabled": false},
+        {"id": "icon_swordsman", "enabled": false}
+      ]
+    },
+    
+    {
+      "id": "battle_1",
+      "type": "battle",
+      "duration_sec": 5,
+      "auto_advance": true,
+      "description": "Сцена 1.1: Бой с ремонтом - ремонтник чинит корабль",
+      "ui": {
+        "show_hp_bars": true,
+        "show_repair_vfx": true
+      },
+      "mechanics": [
+        {
+          "type": "BattleLoop",
+          "config": {
+            "player_hp": 60,
+            "enemy_hp": 100,
+            "enemy_dps": 5,
+            "player_dps": 0,
+            "repair_rate": 8,
+            "duration_sec": 5
+          }
+        }
+      ],
+      "visual_effects": [
+        "repair_sparks",
+        "shield_block"
+      ]
+    },
+    
+    {
+      "id": "weapons_tutorial",
+      "type": "tutorial",
+      "description": "Сцена 2: Установка оружия - перетащить пушки",
+      "ui": {
+        "title": "SETUP WEAPONS",
+        "subtitle": "DRAG CANNONS ON SHIP",
+        "show_tutorial_hand": true,
+        "highlight_item": "icon_cannon"
+      },
+      "mechanics": [
+        {
+          "type": "GridPlacement",
+          "config": {
+            "grid_size": [3, 2],
+            "highlight_color": "#FFEB3B",
+            "required_items": [
+              {
+                "asset_id": "icon_cannon",
+                "count": 2,
+                "cells": 1
+              }
+            ],
+            "on_complete": "next_scene"
+          }
+        }
+      ],
+      "inventory": [
+        {"id": "icon_repairer", "enabled": false, "used": true},
+        {"id": "icon_shield", "enabled": false, "used": true},
+        {"id": "icon_cannon", "enabled": true, "highlight": true, "count": 2},
+        {"id": "icon_gunman", "enabled": false},
+        {"id": "icon_swordsman", "enabled": false}
+      ]
+    },
+    
+    {
+      "id": "battle_2",
+      "type": "battle",
+      "duration_sec": 4,
+      "auto_advance": true,
+      "description": "Сцена 2.1: Бой с пушками - наши пушки стреляют, но урона мало",
+      "ui": {
+        "show_hp_bars": true,
+        "show_cannon_fire": true
+      },
+      "mechanics": [
+        {
+          "type": "BattleLoop",
+          "config": {
+            "player_hp": 80,
+            "enemy_hp": 100,
+            "enemy_dps": 8,
+            "player_dps": 5,
+            "repair_rate": 3,
+            "duration_sec": 4
+          }
+        }
+      ],
+      "visual_effects": [
+        "cannon_fire",
+        "damage_on_both"
+      ]
+    },
+    
+    {
+      "id": "merge_tutorial",
+      "type": "tutorial",
+      "description": "Сцена 3: Merge - объединить две пушки в скелетную пушку",
+      "ui": {
+        "title": "MERGE WEAPONS",
+        "subtitle": "DRAG CANNON",
+        "show_tutorial_hand": true,
+        "highlight_items": ["cannon_1", "cannon_2"]
+      },
+      "mechanics": [
+        {
+          "type": "Merge",
+          "config": {
+            "from_asset": "icon_cannon",
+            "to_asset": "icon_skeleton_cannon",
+            "result_cells": 2,
+            "show_vfx": true,
+            "on_complete": "next_scene"
+          }
+        }
+      ]
+    },
+    
+    {
+      "id": "final_battle",
+      "type": "battle",
+      "duration_sec": 3,
+      "auto_advance": true,
+      "description": "Сцена 3.1: Финальный бой - скелетная пушка топит врага",
+      "ui": {
+        "show_hp_bars": true,
+        "show_victory_splash": true
+      },
+      "mechanics": [
+        {
+          "type": "BattleLoop",
+          "config": {
+            "player_hp": 80,
+            "enemy_hp": 40,
+            "enemy_dps": 5,
+            "player_dps": 30,
+            "repair_rate": 5,
+            "auto_win": true
+          }
+        }
+      ],
+      "visual_effects": [
+        "skeleton_cannon_fire",
+        "enemy_sinking"
+      ]
+    },
+    
+    {
+      "id": "victory",
+      "type": "victory",
+      "description": "Сцена 4: Victory screen с наградами и CTA",
+      "ui": {
+        "title": "VICTORY!",
+        "subtitle": "NEW ITEMS",
+        "cta_text": "TAKE REWARD",
+        "cta_style": "green_button"
+      },
+      "rewards": [
+        {"id": "reward_buckshot_cannon", "name": "BUCKSHOT CANNON"},
+        {"id": "reward_frigate_ship", "name": "FRIGATE SHIP"},
+        {"id": "reward_medic_pirate", "name": "MEDIC PIRATE"}
+      ],
+      "mechanics": [
+        {
+          "type": "CTAOpenStore",
+          "config": {
+            "trigger": "button_click",
+            "button_id": "cta_button"
+          }
+        }
+      ]
+    }
+  ],
+  
+  "mechanics_config": {
+    "GridPlacement": {
+      "cell_size": [100, 100],
+      "gap": 10,
+      "animation": {
+        "place_duration": 0.3,
+        "highlight_pulse": true
+      },
+      "touch_support": true
+    },
+    
+    "Merge": {
+      "animation": {
+        "merge_duration": 0.5,
+        "flash_color": "#FFFFFF",
+        "particles": true
+      }
+    },
+    
+    "BattleLoop": {
+      "tick_rate": 60,
+      "hp_bar_animation": true,
+      "damage_numbers": false,
+      "screen_shake": true
+    },
+    
+    "Tutorial": {
+      "hand_animation": "bounce",
+      "highlight_glow": true,
+      "auto_advance_delay": 500
+    }
+  },
+  
+  "copy": {
+    "EN": {
+      "repair_title": "REPAIR YOUR SHIP",
+      "repair_subtitle": "DRAG REPAIRMANS ON SHIP",
+      "shield_subtitle": "DRAG SHIELDS TO PROTECT THEM",
+      "weapons_title": "SETUP WEAPONS",
+      "weapons_subtitle": "DRAG CANNONS ON SHIP",
+      "merge_title": "MERGE WEAPONS",
+      "merge_subtitle": "DRAG CANNON",
+      "victory_title": "VICTORY!",
+      "victory_subtitle": "NEW ITEMS",
+      "cta_text": "TAKE REWARD"
+    },
+    "RU": {
+      "repair_title": "ПОЧИНИ КОРАБЛЬ",
+      "repair_subtitle": "ПЕРЕТАЩИ РЕМОНТНИКОВ НА КОРАБЛЬ",
+      "shield_subtitle": "ПЕРЕТАЩИ ЩИТЫ ДЛЯ ЗАЩИТЫ",
+      "weapons_title": "УСТАНОВИ ОРУЖИЕ",
+      "weapons_subtitle": "ПЕРЕТАЩИ ПУШКИ НА КОРАБЛЬ",
+      "merge_title": "ОБЪЕДИНИ ОРУЖИЕ",
+      "merge_subtitle": "ПЕРЕТАЩИ ПУШКУ",
+      "victory_title": "ПОБЕДА!",
+      "victory_subtitle": "НОВЫЕ ПРЕДМЕТЫ",
+      "cta_text": "ЗАБРАТЬ НАГРАДУ"
+    }
+  },
+  
+  "notes": {
+    "from_pdf": [
+      "Модули пушек стреляют по кораблям, снимая общий HP корабля",
+      "Модули стрелков стреляют по другим модулям, повреждая их (моргают получая урон)"
+    ],
+    "implementation": [
+      "Для MVP: упрощённая механика без отдельного HP модулей",
+      "Визуальные эффекты: CSS анимации, без canvas",
+      "Touch support: обязателен с первого дня"
+    ]
+  }
+}

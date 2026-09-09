@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>{{ meta.title }}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body {
+            width: 100%; height: 100%;
+            overflow: hidden;
+            touch-action: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #1a1a2e;
+        }
+
+        #loading {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #1a1a2e;
+            color: white;
+            font-size: 24px;
+            z-index: 9999;
+        }
+        #loading.hidden { display: none; }
+
+        #game { display: none; width: 100%; height: 100%; }
+        #game.active { display: block; }
+
+        .scene {
+            display: none;
+            position: absolute;
+            inset: 0;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background-size: cover;
+            background-position: center;
+        }
+        .scene.active { display: flex; }
+
+        .title {
+            font-size: clamp(24px, 7vw, 42px);
+            font-weight: bold;
+            color: #FFD700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            font-size: clamp(14px, 4vw, 22px);
+            color: white;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        /* === GRID MECHANIC === */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(var(--cols, 3), minmax(60px, 90px));
+            gap: 8px;
+            padding: 15px;
+            background: rgba(0,0,0,0.4);
+            border-radius: 15px;
+        }
+        .cell {
+            aspect-ratio: 1;
+            border: 2px dashed rgba(76,175,80,0.6);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .cell.highlight {
+            border-color: #4CAF50;
+            box-shadow: 0 0 15px rgba(76,175,80,0.6);
+            background: rgba(76,175,80,0.2);
+        }
+        .cell.occupied {
+            border-style: solid;
+            background: rgba(76,175,80,0.3);
+        }
+        .cell img { width: 80%; height: 80%; object-fit: contain; }
+
+        /* === INVENTORY === */
+        .inventory {
+            display: flex;
+            gap: 12px;
+            padding: 15px;
+            background: rgba(0,0,0,0.4);
+            border-radius: 15px;
+            margin-top: 20px;
+        }
+        .item {
+            width: clamp(50px, 15vw, 80px);
+            height: clamp(50px, 15vw, 80px);
+            cursor: grab;
+            transition: transform 0.2s, opacity 0.2s;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.1);
+            padding: 5px;
+        }
+        .item:active { cursor: grabbing; transform: scale(1.1); }
+        .item.used { opacity: 0.3; pointer-events: none; }
+        .item img { width: 100%; height: 100%; object-fit: contain; }
+
+        /* === BATTLE === */
+        .battle-container { width: 100%; max-width: 360px; }
+        .hp-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        .hp-label { font-size: 14px; color: white; min-width: 70px; }
+        .hp-bar-bg {
+            flex: 1;
+            height: 24px;
+            background: rgba(0,0,0,0.5);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .hp-bar {
+            height: 100%;
+            border-radius: 12px;
+            transition: width 0.1s;
+        }
+        .hp-bar.player { background: linear-gradient(90deg, #4CAF50, #8BC34A); }
+        .hp-bar.enemy { background: linear-gradient(90deg, #f44336, #ff5722); }
+
+        .arena {
+            position: relative;
+            width: 100%;
+            height: 180px;
+            margin: 20px 0;
+        }
+        .ship {
+            position: absolute;
+            width: 100px;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 50px;
+        }
+        .ship.player { left: 10%; bottom: 10%; }
+        .ship.enemy { right: 10%; top: 10%; transform: scaleX(-1); }
+
+        .projectile {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: #FFD700;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #FFD700;
+        }
+
+        /* === VICTORY === */
+        .rewards {
+            display: flex;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .reward {
+            width: 70px;
+            height: 70px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 8px;
+            animation: pop 0.4s ease-out;
+        }
+        .reward img { width: 100%; height: 100%; object-fit: contain; }
+
+        @keyframes pop {
+            0% { transform: scale(0); }
+            70% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        .cta {
+            padding: clamp(15px, 4vw, 25px) clamp(40px, 12vw, 100px);
+            font-size: clamp(18px, 5vw, 28px);
+            font-weight: bold;
+            background: linear-gradient(180deg, #FFD700, #FFA500);
+            border: none;
+            border-radius: 30px;
+            color: #333;
+            cursor: pointer;
+            box-shadow: 0 5px 25px rgba(255,165,0,0.5);
+            animation: pulse 1.5s ease-in-out infinite;
+            margin-top: 30px;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        /* === TUTORIAL HAND === */
+        .hand {
+            position: absolute;
+            font-size: 40px;
+            pointer-events: none;
+            z-index: 100;
+            animation: point 1s ease-in-out infinite;
+        }
+        @keyframes point {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(15px, 15px); }
+        }
+
+        @keyframes shoot {
+            to { transform: translate(150px, -80px); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading screen (until MRAID ready) -->
+    <div id="loading">Loading...</div>
+
+    <!-- Game container -->
+    <div id="game">
+        {% for scene in scenes %}
+        <div class="scene{% if loop.index == 1 %} active{% endif %}" id="scene-{{ scene.id }}"
+             {% if scene.background and assets.images[scene.background] %}style="background-image: url('{{ assets.images[scene.background] }}')"{% endif %}>
+
+            {% if scene.type == "tutorial" %}
+                <h1 class="title">{{ scene.ui.title | default('REPAIR YOUR SHIP') }}</h1>
+                <p class="subtitle">{{ scene.ui.subtitle | default('DRAG ITEMS TO THE GRID') }}</p>
+
+                {% set grid_config = scene.mechanics[0].config if scene.mechanics else {} %}
+                {% set cols = grid_config.grid[0] if grid_config.grid else 3 %}
+                {% set rows = grid_config.grid[1] if grid_config.grid else 2 %}
+                <div class="grid" style="--cols: {{ cols }}">
+                    {% for i in range(cols * rows) %}
+                    <div class="cell" data-idx="{{ i }}"></div>
+                    {% endfor %}
+                </div>
+
+                <div class="inventory">
+                    {% for key, val in assets.images.items() if 'char_' in key %}
+                    <div class="item" data-asset="{{ key }}">
+                        <img src="{{ val }}" alt="item" draggable="false">
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="hand" id="hand">👆</div>
+
+            {% elif scene.type == "battle" %}
+                <h1 class="title">⚔️ BATTLE!</h1>
+
+                <div class="battle-container">
+                    <div class="hp-row">
+                        <span class="hp-label">🚢 YOU</span>
+                        <div class="hp-bar-bg">
+                            <div class="hp-bar player" id="hp-player" style="width:100%"></div>
+                        </div>
+                    </div>
+
+                    <div class="arena" id="arena">
+                        <div class="ship player">🚢</div>
+                        <div class="ship enemy">🏴‍☠️</div>
+                    </div>
+
+                    <div class="hp-row">
+                        <span class="hp-label">🏴‍☠️ ENEMY</span>
+                        <div class="hp-bar-bg">
+                            <div class="hp-bar enemy" id="hp-enemy" style="width:100%"></div>
+                        </div>
+                    </div>
+                </div>
+
+            {% elif scene.type == "victory" %}
+                <h1 class="title">🏆 {{ scene.ui.title | default('VICTORY!') }}</h1>
+                <p class="subtitle">{{ scene.ui.subtitle | default('Collect your rewards!') }}</p>
+
+                <div class="rewards">
+                    {% for key, val in assets.images.items() if 'icon_' in key or 'char_' in key %}
+                    <div class="reward">
+                        <img src="{{ val }}" alt="reward">
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <button class="cta" onclick="window.playable.openStore()">
+                    {{ scene.ui.cta | default('DOWNLOAD NOW') }}
+                </button>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+
+    <script>
+    // ============ CONFIG ============
+    var CONFIG = {
+        storeIOS: "{{ mraid.click_url_ios | default('https://apps.apple.com') }}",
+        storeAndroid: "{{ mraid.click_url_android | default('https://play.google.com/store') }}",
+        requiredItems: {{ scenes[0].mechanics[0].config.required_items | default(2) if scenes and scenes[0].mechanics else 2 }}
+    };
+
+    // ============ MRAID WRAPPER (Unity 3.0) ============
+    (function() {
+        var hasMraid = typeof mraid !== 'undefined';
+        var started = false;
+
+        window.playable = {
+            openStore: function() {
+                var ios = /iPad|iPhone|iPod/.test(navigator.userAgent);
+                var url = ios ? CONFIG.storeIOS : CONFIG.storeAndroid;
+                if (hasMraid) {
+                    mraid.open(url);
+                } else {
+                    window.open(url, '_blank');
+                }
+            }
+        };
+
+        function start() {
+            if (started) return;
+            started = true;
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('game').classList.add('active');
+            initGame();
+        }
+
+        function onReady() {
+            if (mraid.isViewable()) {
+                start();
+            } else {
+                mraid.addEventListener('viewableChange', function(v) { if(v) start(); });
+            }
+        }
+
+        if (hasMraid) {
+            if (mraid.getState() === 'loading') {
+                mraid.addEventListener('ready', onReady);
+            } else {
+                onReady();
+            }
+        } else {
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', start);
+            } else {
+                start();
+            }
+        }
+    })();
+
+    // ============ GAME ENGINE ============
+    var currentScene = 0;
+    var sceneIds = [{% for scene in scenes %}'scene-{{ scene.id }}'{% if not loop.last %}, {% endif %}{% endfor %}];
+    var sceneTypes = [{% for scene in scenes %}'{{ scene.type }}'{% if not loop.last %}, {% endif %}{% endfor %}];
+    var placedItems = 0;
+
+    function initGame() {
+        showScene(0);
+        setupDragDrop();
+    }
+
+    function showScene(idx) {
+        sceneIds.forEach(function(id, i) {
+            var el = document.getElementById(id);
+            if (el) el.classList.toggle('active', i === idx);
+        });
+        currentScene = idx;
+
+        if (sceneTypes[idx] === 'battle') {
+            setTimeout(startBattle, 300);
+        }
+    }
+
+    // ============ DRAG & DROP ============
+    var _clone = null;
+    var _dragItem = null;
+
+    function setupDragDrop() {
+        var items = document.querySelectorAll('.item');
+        var cells = document.querySelectorAll('.cell');
+
+        items.forEach(function(item) {
+            item.addEventListener('touchstart', onTouchStart, {passive: false});
+            item.addEventListener('touchmove', onTouchMove, {passive: false});
+            item.addEventListener('touchend', onTouchEnd, {passive: false});
+
+            // Mouse fallback for desktop
+            item.addEventListener('mousedown', onMouseDown);
+        });
+
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+    }
+
+    function onTouchStart(e) {
+        e.preventDefault();
+        _dragItem = e.target.closest('.item');
+        if (!_dragItem || _dragItem.classList.contains('used')) return;
+
+        _clone = _dragItem.cloneNode(true);
+        _clone.style.cssText = 'position:fixed;pointer-events:none;opacity:0.8;z-index:1000;width:70px;height:70px;';
+        document.body.appendChild(_clone);
+
+        var t = e.touches[0];
+        _clone.style.left = (t.clientX - 35) + 'px';
+        _clone.style.top = (t.clientY - 35) + 'px';
+
+        highlightCells(true);
+        var hand = document.getElementById('hand');
+        if (hand) hand.style.display = 'none';
+    }
+
+    function onTouchMove(e) {
+        if (!_clone) return;
+        e.preventDefault();
+        var t = e.touches[0];
+        _clone.style.left = (t.clientX - 35) + 'px';
+        _clone.style.top = (t.clientY - 35) + 'px';
+    }
+
+    function onTouchEnd(e) {
+        if (!_clone) return;
+        e.preventDefault();
+
+        var t = e.changedTouches[0];
+        var el = document.elementFromPoint(t.clientX, t.clientY);
+        var cell = el ? el.closest('.cell') : null;
+
+        if (cell && !cell.classList.contains('occupied')) {
+            placeItem(_dragItem, cell);
+        }
+
+        cleanup();
+    }
+
+    function onMouseDown(e) {
+        _dragItem = e.target.closest('.item');
+        if (!_dragItem || _dragItem.classList.contains('used')) return;
+
+        _clone = _dragItem.cloneNode(true);
+        _clone.style.cssText = 'position:fixed;pointer-events:none;opacity:0.8;z-index:1000;width:70px;height:70px;';
+        document.body.appendChild(_clone);
+
+        _clone.style.left = (e.clientX - 35) + 'px';
+        _clone.style.top = (e.clientY - 35) + 'px';
+
+        highlightCells(true);
+        var hand = document.getElementById('hand');
+        if (hand) hand.style.display = 'none';
+    }
+
+    function onMouseMove(e) {
+        if (!_clone) return;
+        _clone.style.left = (e.clientX - 35) + 'px';
+        _clone.style.top = (e.clientY - 35) + 'px';
+    }
+
+    function onMouseUp(e) {
+        if (!_clone) return;
+
+        var el = document.elementFromPoint(e.clientX, e.clientY);
+        var cell = el ? el.closest('.cell') : null;
+
+        if (cell && !cell.classList.contains('occupied')) {
+            placeItem(_dragItem, cell);
+        }
+
+        cleanup();
+    }
+
+    function cleanup() {
+        if (_clone) _clone.remove();
+        _clone = null;
+        _dragItem = null;
+        highlightCells(false);
+    }
+
+    function highlightCells(show) {
+        document.querySelectorAll('.cell:not(.occupied)').forEach(function(c) {
+            c.classList.toggle('highlight', show);
+        });
+    }
+
+    function placeItem(item, cell) {
+        var img = item.querySelector('img').cloneNode();
+        cell.appendChild(img);
+        cell.classList.add('occupied');
+        item.classList.add('used');
+
+        placedItems++;
+        if (placedItems >= CONFIG.requiredItems) {
+            setTimeout(function() { showScene(1); }, 600);
+        }
+    }
+
+    // ============ BATTLE ============
+    function startBattle() {
+        var playerHP = 100, enemyHP = 100;
+        var playerBar = document.getElementById('hp-player');
+        var enemyBar = document.getElementById('hp-enemy');
+
+        var loop = setInterval(function() {
+            playerHP = Math.max(0, Math.min(100, playerHP - 2 + 1.5));
+            enemyHP = Math.max(0, enemyHP - 4);
+
+            if (playerBar) playerBar.style.width = playerHP + '%';
+            if (enemyBar) enemyBar.style.width = enemyHP + '%';
+
+            if (Math.random() < 0.15) spawnProjectile();
+
+            if (enemyHP <= 0) {
+                clearInterval(loop);
+                setTimeout(function() { showScene(2); }, 500);
+            }
+        }, 100);
+    }
+
+    function spawnProjectile() {
+        var arena = document.getElementById('arena');
+        if (!arena) return;
+
+        var p = document.createElement('div');
+        p.className = 'projectile';
+        p.style.cssText = 'left:25%;bottom:30%;animation:shoot 0.4s linear forwards;';
+        arena.appendChild(p);
+        setTimeout(function() { p.remove(); }, 400);
+    }
+    </script>
+</body>
+</html>

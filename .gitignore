@@ -1,0 +1,59 @@
+# === Secrets ===
+.env
+.env.*
+!.env.example
+.streamlit/secrets.toml
+
+# === Python ===
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# === Virtual environments ===
+venv/
+.venv/
+ENV/
+env/
+
+# === Testing / tooling caches ===
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# === IDE / OS ===
+.vscode/
+.idea/
+.claude/
+*.swp
+*.swo
+.DS_Store
+
+# === Logs ===
+*.log
+
+# === Generated output ===
+output/
+output_*.html
+memory/
+tmp/
+screenshots/
+*.tmp
+*.bak
+
+# Generated playables are ignored, except the committed demo
+*.html
+!examples/*.html
+!frontend/templates/**/*.html
+
+# === Vendored agent tooling (not part of this project) ===
+superpowers/
+
+# === Internal / third-party reference material ===
+docs/misc/
